@@ -1,12 +1,12 @@
 #![feature(map_first_last)]
 #![cfg_attr(not(feature = "std"), no_std)]
 use frame_support::{decl_error, decl_event, decl_module, decl_storage, dispatch, Parameter};
-use sp_arithmetic::traits::BaseArithmetic;
+use sp_arithmetic::traits::{BaseArithmetic, Zero};
 use sp_runtime::traits::Member;
 use system::ensure_signed;
 
-mod reward_sharing;
 mod record;
+mod reward_sharing;
 mod table;
 mod table_data;
 
@@ -16,18 +16,28 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-pub trait Trait: system::Trait
+pub trait Trait: system::Trait + assets::Trait
 {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
-    type TargetType: Default + Parameter + Ord;
     type TableId: Default + Parameter + Member + Copy + BaseArithmetic;
+
+    type TargetType: Default + Parameter + Ord;
+    type PeriodType: Default + Parameter + BaseArithmetic + Copy;
 }
+
+type Table<T: Trait> = crate::table::Table<
+    <T as assets::Trait>::AssetId,
+    <T as system::Trait>::AccountId,
+    <T as Trait>::TargetType,
+    <T as assets::Trait>::Balance,
+    <T as Trait>::PeriodType,
+>;
 
 decl_storage! {
     trait Store for Module<T: Trait> as TemplateModule
     {
-        Something get(fn something): Option<u32>;
+        Scores get(fn tables): map hasher(blake2_256) T::TableId => Table<T>;
     }
 }
 
@@ -56,29 +66,5 @@ decl_module! {
 
         fn deposit_event() = default;
 
-        pub fn do_something(origin, something: u32) -> dispatch::DispatchResult
-        {
-            let who = ensure_signed(origin)?;
-
-            Something::put(something);
-
-            Self::deposit_event(RawEvent::SomethingStored(something, who));
-            Ok(())
-        }
-
-        pub fn cause_error(origin) -> dispatch::DispatchResult
-        {
-            let _who = ensure_signed(origin)?;
-
-            match Something::get()
-            {
-                None => Err(Error::<T>::NoneValue)?,
-                Some(old) => {
-                    let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-                    Something::put(new);
-                    Ok(())
-                },
-            }
-        }
     }
 }

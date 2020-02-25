@@ -11,11 +11,11 @@ type RawString = Vec<u8>;
 #[derive(Decode, Encode, Default, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Table<
-    AssetId: Default,
-    VoterId: Default + Ord,
-    TargetType: Default + Ord,
-    BalanceType: Default + Copy + BaseArithmetic + Zero,
-    PeriodType: Default + BaseArithmetic + Copy,
+    AssetId: Default + Encode + Decode,
+    VoterId: Default + Ord + Encode + Decode,
+    TargetType: Default + Ord + Encode + Decode,
+    BalanceType: Default + Copy + BaseArithmetic + Zero + Encode + Decode,
+    PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
 > {
     pub name: Option<RawString>,
     head_count: u8,
@@ -25,11 +25,11 @@ pub struct Table<
 }
 
 impl<
-        AssetId: Default,
-        VoterId: Default + Ord + Copy,
-        TargetType: Default + Ord + Copy,
-        BalanceType: Default + Copy + BaseArithmetic + Clone,
-        PeriodType: Default + BaseArithmetic + Copy,
+        AssetId: Default + Encode + Decode,
+        VoterId: Default + Ord + Copy + Encode + Decode,
+        TargetType: Default + Ord + Copy + Encode + Decode,
+        BalanceType: Default + Copy + BaseArithmetic + Clone + Encode + Decode,
+        PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
     > Table<AssetId, VoterId, TargetType, BalanceType, PeriodType>
 {
     pub fn new(name: Option<RawString>, head_count: u8, vote_asset: AssetId) -> Self
@@ -82,8 +82,10 @@ impl<
             {
                 if balance != Zero::zero()
                 {
-                    self.targets
-                        .insert(target, TargetData::create_with_first_vote(account, balance.clone()));
+                    self.targets.insert(
+                        target,
+                        TargetData::create_with_first_vote(account, balance.clone()),
+                    );
                     (VoteResult::Success, Zero::zero(), balance)
                 }
                 else
@@ -172,13 +174,13 @@ impl<
 #[cfg(test)]
 mod tests
 {
-    type Table = super::Table<u8, usize, u8, u32, u32>;
+    type Table = super::Table<u8, u8, u8, u32, u32>;
     type VR = super::VoteResult<u32>;
 
-    const ALICE: usize = 10;
-    const BOB: usize = 11;
-    const CARL: usize = 12;
-    const CAROL: usize = 13;
+    const ALICE: u8 = 10;
+    const BOB: u8 = 11;
+    const CARL: u8 = 12;
+    const CAROL: u8 = 13;
 
     fn compare_head(table: &Table, expected: Vec<u8>)
     {
@@ -278,4 +280,6 @@ mod tests
 
         compare_head(&table, vec![2, 1]);
     }
+
+    // ToDo add reward sharing tests
 }
