@@ -1,0 +1,69 @@
+[package]
+authors = ["sadsnake sadsnake@mixbytes.io"]
+edition = '2018'
+name = 'pallet-template'
+version = '0.0.1'
+
+[dependencies]
+safe-mix = { default-features = false, version = '1.0.0' }
+
+[dependencies.codec]
+package = "parity-scale-codec"
+version = "1.0.0"
+default-features = false
+features = ["derive"]
+
+[dependencies.frame-support]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+package = "frame-support"
+version = '2.0.0'
+
+[dependencies.system]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+package = "frame-system"
+version = '2.0.0'
+
+[dependencies.sp-arithmetic]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+version = '2.0.0'
+
+[dev-dependencies.sp-core]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+package = "sp-core"
+version = '2.0.0'
+
+[dev-dependencies.sp-io]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+package = "sp-io"
+version = '2.0.0'
+
+[dependencies.sp-runtime]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+package = "sp-runtime"
+version = '2.0.0'
+
+[dependencies.assets]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+package = "pallet-generic-asset"
+
+[dependencies.rstd]
+default-features = false
+git = "https://github.com/paritytech/substrate"
+package = "sp-std"
+
+[features]
+default = ['std']
+std = [
+    'codec/std',
+    'frame-support/std',
+    'safe-mix/std',
+    'system/std',
+    'assets/std',
+]
