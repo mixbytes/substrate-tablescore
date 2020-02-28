@@ -164,6 +164,18 @@ decl_module! {
 
             Ok(())
         }
+
+        pub fn pop_reward(origin, table_id: T::TableId, target: T::TargetType) -> dispatch::DispatchResult
+        {
+            let who = ensure_signed(origin)?;
+            let table = Scores::<T>::get(table_id);
+
+            if let Some(reward) = Scores::<T>::mutate(&table_id, |table| table.pop_reward(&who, target))
+            {
+                Self::send_reward(&table.vote_asset, &table.wallet, &who, reward)?;
+            }
+            Ok(())
+        }
     }
 }
 
