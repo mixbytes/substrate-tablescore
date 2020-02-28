@@ -2,9 +2,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use crate::table_data::VoteResult;
 use frame_support::{decl_error, decl_event, decl_module, decl_storage, dispatch, Parameter};
-use sp_arithmetic::traits::{BaseArithmetic, CheckedAdd, One, Zero};
+use sp_arithmetic::traits::{BaseArithmetic, CheckedAdd, One};
 use sp_runtime::traits::Member;
-use system::{ensure_root, ensure_signed};
+use system::ensure_signed;
 
 mod record;
 mod reward_sharing;
@@ -100,11 +100,7 @@ decl_module! {
             match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, balance))
             {
                 VoteResult::Success => Ok(()),
-                VoteResult::SuccessRewardOwed(reward) =>
-                {
-                    Self::send_reward(table.wallet, who, table.vote_asset, reward);
-                    Ok(())
-                },
+                VoteResult::SuccessRewardOwed(reward) => Self::send_reward(&table.vote_asset, &table.wallet, &who, reward),
                 _ => Err(Error::<T>::NoneValue)?,
             }
         }
@@ -122,7 +118,7 @@ decl_module! {
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
                     if let Some(reward) = reward
                     {
-                        Self::send_reward(table.wallet, who, table.vote_asset, reward);
+                        Self::send_reward(&table.vote_asset, &table.wallet, &who, reward)?;
                     }
                     Ok(())
                 },
@@ -131,14 +127,12 @@ decl_module! {
             }
         }
 
-        pub fn cancel(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
+        pub fn cancel(origin, table_id: T::TableId, target: T::TargetType) -> dispatch::DispatchResult
         {
             let who = ensure_signed(origin)?;
 
-            let (mut asset_id, wallet, mut result) = Scores::<T>::mutate(&table_id, |table|
-            {
-                (table.vote_asset, table.wallet, table.cancel(target, &who))
-            });
+            let table = Scores::<T>::get(table_id);
+            let result = Scores::<T>::mutate(&table_id, |table| table.cancel(target, &who));
 
             Self::deposit_event(RawEvent::CancelVote(table_id, target, who.clone()));
 
@@ -146,10 +140,10 @@ decl_module! {
             {
                 VoteResult::Unvoted(unvote, reward) | VoteResult::UnvotedPart(unvote, reward) =>
                 {
-                    assets::Module::<T>::unreserve(&asset_id, &who, unvote);
+                    assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
                     if let Some(reward) = reward
                     {
-                        Self::send_reward(wallet, who, asset_id, reward);
+                        Self::send_reward(&table.vote_asset, &table.wallet, &who, reward)?;
                     }
                     Ok(())
                 },
@@ -158,9 +152,15 @@ decl_module! {
             }
         }
 
-        pub fn append_reward(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType)
+        pub fn append_reward(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
         {
+            let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
+
+            assets::Module::<T>::make_transfer(&table.vote_asset, &who, &table.wallet, balance)?;
+            Scores::<T>::mutate(&table_id, |table|  table.append_reward(target, balance) ).map_err(|_| Error::<T>::NoneValue)?;
+
+            Ok(())
         }
     }
 }
@@ -169,26 +169,25 @@ impl<T: Trait> Module<T>
 {
     fn get_next_table_id() -> Result<T::TableId, Error<T>>
     {
-        let mut result = Err(Error::<T>::NoneValue);
-
         TableIdSequence::<T>::mutate(|id| match id.checked_add(&One::one())
         {
             Some(res) =>
             {
-                result = Ok(*id);
+                let result = Ok(*id);
                 *id = res;
+                result
             }
-            None =>
-            {
-                result = Err(Error::<T>::TableIdOverflow);
-            }
-        });
-
-        result
+            None => Err(Error::<T>::TableIdOverflow)
+        })
     }
 
-    fn send_reward(wallet: T::AccountId, who: T::AccountId, asset_id: AssetId<T>, balance: Balance<T>)
+    fn send_reward(
+        asset_id: &AssetId<T>,
+        wallet: &T::AccountId,
+        who: &T::AccountId,
+        balance: Balance<T>,
+    ) -> dispatch::DispatchResult
     {
-        assets::Module::<T>::transfer(wallet, asset_id, who, balance);
+        assets::Module::<T>::make_transfer(asset_id, wallet, who, balance)
     }
 }

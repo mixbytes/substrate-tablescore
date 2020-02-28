@@ -44,20 +44,6 @@ impl<
         }
     }
 
-    fn get_current_period_reward(&self) -> Option<BalanceType>
-    {
-        let mut rewards = self.rewards.iter();
-
-        let current = rewards.next_back();
-        let prev = rewards.next_back();
-
-        match (current, prev)
-        {
-            (Some((_, current)), Some((_, prev))) => Some(*current - *prev),
-            _ => None,
-        }
-    }
-
     pub fn new_voter(&mut self, voter: VoterId)
     {
         self.increment_period();

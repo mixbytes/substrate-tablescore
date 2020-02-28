@@ -148,7 +148,6 @@ mod tests
     const ALICE: usize = 10;
     const BOB: usize = 11;
     const CARL: usize = 12;
-    const CAROL: usize = 13;
 
     macro_rules! vote_assert
     {

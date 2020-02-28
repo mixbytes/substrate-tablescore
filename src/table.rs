@@ -181,13 +181,15 @@ impl<
 #[cfg(test)]
 mod tests
 {
-    type Table = super::Table<u8, u8, u8, u32, u32>;
+    type Table = super::Table<u8, u8, u8, u32, u32, u8>;
     type VR = super::VoteResult<u32>;
 
     const ALICE: u8 = 10;
     const BOB: u8 = 11;
     const CARL: u8 = 12;
     const CAROL: u8 = 13;
+
+    const WALLET: u8 = 0;
 
     fn compare_head(table: &Table, expected: Vec<u8>)
     {
@@ -200,17 +202,17 @@ mod tests
     #[test]
     fn create()
     {
-        let table = Table::new(None, 2, 0);
+        let table = Table::new(None, 2, 0, WALLET);
         assert_eq!(table.get_head().len(), 0);
     }
 
     #[test]
     fn simple_vote()
     {
-        let mut table = Table::new(None, 2, 0);
-        assert_eq!(table.vote(0, ALICE, 10), VR::Success);
-        assert_eq!(table.vote(1, BOB, 11), VR::Success);
-        assert_eq!(table.vote(2, CARL, 12), VR::Success);
+        let mut table = Table::new(None, 2, 0, WALLET);
+        assert_eq!(table.vote(0, &ALICE, 10), VR::Success);
+        assert_eq!(table.vote(1, &BOB, 11), VR::Success);
+        assert_eq!(table.vote(2, &CARL, 12), VR::Success);
 
         compare_head(&table, vec![2, 1]);
     }
@@ -218,17 +220,17 @@ mod tests
     #[test]
     fn supplement_vote()
     {
-        let mut table = Table::new(None, 2, 0);
+        let mut table = Table::new(None, 2, 0, WALLET);
 
-        assert_eq!(table.vote(0, ALICE, 10), VR::Success);
-        assert_eq!(table.vote(1, BOB, 11), VR::Success);
-        assert_eq!(table.vote(2, CARL, 12), VR::Success);
-        assert_eq!(table.vote(3, CAROL, 13), VR::Success);
+        assert_eq!(table.vote(0, &ALICE, 10), VR::Success);
+        assert_eq!(table.vote(1, &BOB, 11), VR::Success);
+        assert_eq!(table.vote(2, &CARL, 12), VR::Success);
+        assert_eq!(table.vote(3, &CAROL, 13), VR::Success);
 
-        assert_eq!(table.vote(0, ALICE, 10), VR::Success);
-        assert_eq!(table.vote(1, BOB, 4), VR::Success);
-        assert_eq!(table.vote(2, CARL, 4), VR::Success);
-        assert_eq!(table.vote(3, CAROL, 6), VR::Success);
+        assert_eq!(table.vote(0, &ALICE, 10), VR::Success);
+        assert_eq!(table.vote(1, &BOB, 4), VR::Success);
+        assert_eq!(table.vote(2, &CARL, 4), VR::Success);
+        assert_eq!(table.vote(3, &CAROL, 6), VR::Success);
 
         compare_head(&table, vec![0, 3])
     }
@@ -236,54 +238,54 @@ mod tests
     #[test]
     fn unvote()
     {
-        let mut table = Table::new(None, 3, 0);
+        let mut table = Table::new(None, 3, 0, WALLET);
 
-        assert_eq!(table.vote(1, ALICE, 5), VR::Success);
-        assert_eq!(table.vote(2, BOB, 10), VR::Success);
-        assert_eq!(table.vote(3, CAROL, 20), VR::Success);
+        assert_eq!(table.vote(1, &ALICE, 5), VR::Success);
+        assert_eq!(table.vote(2, &BOB, 10), VR::Success);
+        assert_eq!(table.vote(3, &CAROL, 20), VR::Success);
 
         compare_head(&table, vec![3, 2, 1]);
 
-        assert_eq!(table.unvote(3, CAROL, 11), VR::UnvotedPart(11, None));
+        assert_eq!(table.unvote(3, &CAROL, 11), VR::UnvotedPart(11, None));
         compare_head(&table, vec![2, 3, 1]);
 
-        assert_eq!(table.unvote(2, BOB, 6), VR::UnvotedPart(6, None));
+        assert_eq!(table.unvote(2, &BOB, 6), VR::UnvotedPart(6, None));
         compare_head(&table, vec![3, 1, 2]);
     }
 
     #[test]
     fn multivote()
     {
-        let mut table = Table::new(None, 2, 0);
+        let mut table = Table::new(None, 2, 0, WALLET);
 
-        assert_eq!(table.vote(0, ALICE, 10), VR::Success);
-        assert_eq!(table.vote(1, BOB, 11), VR::Success);
-        assert_eq!(table.vote(2, CARL, 12), VR::Success);
-        assert_eq!(table.vote(3, CAROL, 13), VR::Success);
+        assert_eq!(table.vote(0, &ALICE, 10), VR::Success);
+        assert_eq!(table.vote(1, &BOB, 11), VR::Success);
+        assert_eq!(table.vote(2, &CARL, 12), VR::Success);
+        assert_eq!(table.vote(3, &CAROL, 13), VR::Success);
 
         compare_head(&table, vec![3, 2]);
 
-        assert_eq!(table.vote(1, ALICE, 10), VR::Success);
+        assert_eq!(table.vote(1, &ALICE, 10), VR::Success);
         compare_head(&table, vec![1, 3]);
 
-        assert_eq!(table.vote(2, ALICE, 8), VR::Success);
+        assert_eq!(table.vote(2, &ALICE, 8), VR::Success);
         compare_head(&table, vec![1, 2]);
     }
 
     #[test]
     fn cancel_vote()
     {
-        let mut table = Table::new(None, 2, 0);
+        let mut table = Table::new(None, 2, 0, WALLET);
 
-        assert_eq!(table.vote(0, ALICE, 10), VR::Success);
-        assert_eq!(table.vote(1, BOB, 11), VR::Success);
-        assert_eq!(table.vote(2, CARL, 12), VR::Success);
-        assert_eq!(table.vote(3, CAROL, 13), VR::Success);
+        assert_eq!(table.vote(0, &ALICE, 10), VR::Success);
+        assert_eq!(table.vote(1, &BOB, 11), VR::Success);
+        assert_eq!(table.vote(2, &CARL, 12), VR::Success);
+        assert_eq!(table.vote(3, &CAROL, 13), VR::Success);
 
         compare_head(&table, vec![3, 2]);
 
-        assert_eq!(table.cancel(3, CAROL), VR::Unvoted(13, None));
-        assert_eq!(table.cancel(3, CAROL), VR::VoteNotFound);
+        assert_eq!(table.cancel(3, &CAROL), VR::Unvoted(13, None));
+        assert_eq!(table.cancel(3, &CAROL), VR::VoteNotFound);
 
         compare_head(&table, vec![2, 1]);
     }

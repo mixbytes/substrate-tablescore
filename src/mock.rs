@@ -24,6 +24,7 @@ parameter_types! {
     pub const MaximumBlockLength: u32 = 2 * 1024;
     pub const AvailableBlockRatio: Perbill = Perbill::from_percent(75);
 }
+
 impl system::Trait for Test
 {
     type Origin = Origin;
@@ -34,8 +35,7 @@ impl system::Trait for Test
     type Hashing = BlakeTwo256;
     type AccountId = u64;
     type Lookup = IdentityLookup<Self::AccountId>;
-    type Header = Header;
-    type Event = ();
+    type Header = Header; type Event = ();
     type BlockHashCount = BlockHashCount;
     type MaximumBlockWeight = MaximumBlockWeight;
     type MaximumBlockLength = MaximumBlockLength;
@@ -46,11 +46,22 @@ impl system::Trait for Test
     type OnNewAccount = ();
     type OnReapAccount = ();
 }
+
+impl assets::Trait for Test
+{
+    type Event = ();
+
+    type Balance = u128;
+    type AssetId = u32;
+}
+
 impl Trait for Test
 {
     type Event = ();
     type TargetType = u32;
     type TableId = u32;
+
+    type PeriodType = u32;
 }
 
 pub type TemplateModule = Module<Test>;
