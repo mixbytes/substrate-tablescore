@@ -51,8 +51,11 @@ decl_event!(
     where
         AccountId = <T as system::Trait>::AccountId,
         TableId = <T as Trait>::TableId,
+        TargetType = <T as Trait>::TargetType,
     {
         TableCreated(TableId, AccountId),
+        ChangeVote(TableId, TargetType),
+        CancelVote(TableId, TargetType, AccountId),
     }
 );
 
@@ -91,10 +94,9 @@ decl_module! {
             let table = Scores::<T>::get(table_id);
             assets::Module::<T>::reserve(&table.vote_asset, &who, balance)?;
 
-            let mut result = VoteResult::VoteNotFound;
-            Scores::<T>::mutate(&table_id, |table| { result = table.vote(target, &who, balance) });
+            Self::deposit_event(RawEvent::ChangeVote(table_id, target));
 
-            match result
+            match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, balance))
             {
                 VoteResult::Success => Ok(()),
                 VoteResult::SuccessRewardOwed(reward) =>
@@ -111,9 +113,9 @@ decl_module! {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
 
-            let mut result = VoteResult::VoteNotFound;
-            Scores::<T>::mutate(&table_id, |table| {result = table.unvote(target, &who, balance)});
-            match result
+            Self::deposit_event(RawEvent::ChangeVote(table_id, target));
+
+            match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, balance))
             {
                 VoteResult::Unvoted(unvote, reward) | VoteResult::UnvotedPart(unvote, reward) => {
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
@@ -132,14 +134,12 @@ decl_module! {
         {
             let who = ensure_signed(origin)?;
 
-            let mut result = VoteResult::VoteNotFound;
-            let mut asset_id = AssetId::<T>::default();
-
-            Scores::<T>::mutate(&table_id, |table|
+            let (mut asset_id, mut result) = Scores::<T>::mutate(&table_id, |table|
             {
-                asset_id = table.vote_asset;
-                result = table.cancel(target, &who);
+                (table.vote_asset, table.cancel(target, &who))
             });
+
+            Self::deposit_event(RawEvent::CancelVote(table_id, target, who.clone()));
 
             match result
             {
