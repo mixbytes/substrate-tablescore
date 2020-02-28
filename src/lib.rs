@@ -77,6 +77,7 @@ decl_module! {
 
         fn deposit_event() = default;
 
+        /// Creating new table and emit event
         pub fn create_table(origin, vote_asset: AssetId<T>, head_len: u8, name: Option<Vec<u8>>) -> dispatch::DispatchResult
         {
             let who = ensure_signed(origin)?;
@@ -89,15 +90,16 @@ decl_module! {
             Ok(())
         }
 
-        pub fn vote(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
+        /// Vote for the target
+        pub fn vote(origin, table_id: T::TableId, vote: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
         {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
-            assets::Module::<T>::reserve(&table.vote_asset, &who, balance)?;
+            assets::Module::<T>::reserve(&table.vote_asset, &who, vote)?;
 
             Self::deposit_event(RawEvent::ChangeVote(table_id, target));
 
-            match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, balance))
+            match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, vote))
             {
                 VoteResult::Success => Ok(()),
                 VoteResult::SuccessRewardOwed(reward) => Self::send_reward(&table.vote_asset, &table.wallet, &who, reward),
@@ -105,14 +107,15 @@ decl_module! {
             }
         }
 
-        pub fn unvote(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
+        /// Unvote for the target
+        pub fn unvote(origin, table_id: T::TableId, vote: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
         {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
 
             Self::deposit_event(RawEvent::ChangeVote(table_id, target));
 
-            match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, balance))
+            match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, vote))
             {
                 VoteResult::Unvoted(unvote, reward) | VoteResult::UnvotedPart(unvote, reward) => {
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
@@ -127,6 +130,7 @@ decl_module! {
             }
         }
 
+        /// Cancel your vote for target
         pub fn cancel(origin, table_id: T::TableId, target: T::TargetType) -> dispatch::DispatchResult
         {
             let who = ensure_signed(origin)?;
@@ -152,6 +156,7 @@ decl_module! {
             }
         }
 
+        /// Store reward for target
         pub fn append_reward(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
         {
             let who = ensure_signed(origin)?;
@@ -165,6 +170,7 @@ decl_module! {
             Ok(())
         }
 
+        /// Pick up your reward for target
         pub fn pop_reward(origin, table_id: T::TableId, target: T::TargetType) -> dispatch::DispatchResult
         {
             let who = ensure_signed(origin)?;
@@ -202,7 +208,11 @@ impl<T: Trait> Module<T>
         balance: Balance<T>,
     ) -> dispatch::DispatchResult
     {
-        assets::Module::<T>::unreserve(asset_id, wallet, balance);
-        assets::Module::<T>::make_transfer(asset_id, wallet, who, balance)
+        assets::Module::<T>::make_transfer(
+            asset_id,
+            wallet,
+            who,
+            assets::Module::<T>::unreserve(asset_id, wallet, balance),
+        )
     }
 }
