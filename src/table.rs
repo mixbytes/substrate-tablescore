@@ -6,13 +6,13 @@ use crate::table_data::*;
 use codec::{Decode, Encode};
 use sp_arithmetic::traits::{BaseArithmetic, Zero};
 
-type RawString = Vec<u8>;
+pub type RawString = Vec<u8>;
 
 #[derive(Decode, Encode, Default, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Table<
     AssetId: Default + Encode + Decode,
-    VoterId: Default + Ord + Encode + Decode,
+    VoterId: Default + Ord + Encode + Decode + Clone,
     TargetType: Default + Ord + Encode + Decode,
     BalanceType: Default + Copy + BaseArithmetic + Zero + Encode + Decode,
     PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
@@ -26,7 +26,7 @@ pub struct Table<
 
 impl<
         AssetId: Default + Encode + Decode,
-        VoterId: Default + Ord + Copy + Encode + Decode,
+        VoterId: Default + Ord + Encode + Decode + Clone,
         TargetType: Default + Ord + Copy + Encode + Decode,
         BalanceType: Default + Copy + BaseArithmetic + Clone + Encode + Decode,
         PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
@@ -62,7 +62,7 @@ impl<
     fn process<F>(
         &mut self,
         target: TargetType,
-        account: VoterId,
+        account: &VoterId,
         balance: BalanceType,
         callback: F,
     ) -> VoteResult<BalanceType>
@@ -84,7 +84,7 @@ impl<
                 {
                     self.targets.insert(
                         target,
-                        TargetData::create_with_first_vote(account, balance.clone()),
+                        TargetData::create_with_first_vote(account.clone(), balance.clone()),
                     );
                     (VoteResult::Success, Zero::zero(), balance)
                 }
@@ -117,28 +117,28 @@ impl<
     pub fn vote(
         &mut self,
         target: TargetType,
-        voter: VoterId,
+        voter: &VoterId,
         balance: BalanceType,
     ) -> VoteResult<BalanceType>
     {
-        self.process(target, voter, balance.clone(), |td| td.vote(voter, balance))
+        self.process(target, voter, balance.clone(), |td| td.vote(voter.clone(), balance))
     }
 
     pub fn unvote(
         &mut self,
         target: TargetType,
-        voter: VoterId,
+        voter: &VoterId,
         balance: BalanceType,
     ) -> VoteResult<BalanceType>
     {
         self.process(target, voter, balance.clone(), |td| {
-            td.unvote(&voter, balance)
+            td.unvote(voter, balance)
         })
     }
 
-    pub fn cancel(&mut self, target: TargetType, account: VoterId) -> VoteResult<BalanceType>
+    pub fn cancel(&mut self, target: TargetType, account: &VoterId) -> VoteResult<BalanceType>
     {
-        self.process(target, account, Zero::zero(), |td| td.cancel(&account))
+        self.process(target, account, Zero::zero(), |td| td.cancel(account))
     }
 
     pub fn get_head(&self) -> Vec<&TargetType>

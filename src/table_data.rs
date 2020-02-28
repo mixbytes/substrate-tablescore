@@ -8,7 +8,7 @@ use crate::reward_sharing::{RewardSharing, Rewarder};
 #[derive(Decode, Encode, Default, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct TargetData<
-    VoterId: Default + Ord,
+    VoterId: Default + Ord + Clone,
     BalanceType: Default + Copy + BaseArithmetic + Zero,
     PeriodType: Default + BaseArithmetic + Copy,
 > {
@@ -30,7 +30,7 @@ pub enum VoteResult<BalanceType>
 }
 
 impl<
-        VoterId: Default + Copy + Ord,
+        VoterId: Default + Ord + Clone,
         BalanceType: Default + Copy + BaseArithmetic + Zero + Clone,
         PeriodType: Default + BaseArithmetic + Copy,
     > TargetData<VoterId, BalanceType, PeriodType>
@@ -42,7 +42,7 @@ impl<
             votes: BTreeMap::new(),
             rewarder: Rewarder::default(),
         };
-        res.votes.insert(first_voter, balance);
+        res.votes.insert(first_voter.clone(), balance);
         res.rewarder.new_voter(first_voter);
         res
     }
@@ -62,7 +62,7 @@ impl<
         }
         else
         {
-            self.votes.insert(account, balance);
+            self.votes.insert(account.clone(), balance);
             self.rewarder.new_voter(account);
             VoteResult::Success
         }
@@ -115,7 +115,7 @@ impl<
 }
 
 impl<
-        VoterId: Default + Ord,
+        VoterId: Default + Ord + Clone,
         BalanceType: Default + Copy + BaseArithmetic + Zero + Clone,
         PeriodType: Default + BaseArithmetic + Copy,
     > RewardSharing for TargetData<VoterId, BalanceType, PeriodType>
@@ -186,7 +186,7 @@ mod tests
 
         ($data:ident, $( ($user:ident, $reward:expr) ), * ) => {
             $(
-                
+
                 let balance =$data.get(&$user).unwrap_or(0);
                 assert_eq!($data.unvote(&$user, balance, VR::Unvoted(balance, $reward)));
             )*
@@ -240,7 +240,7 @@ mod tests
         assert_eq!(data.pop_reward(&BOB), Some(200));
         assert_eq!(data.pop_reward(&CARL), Some(400 + 400));
     }
-    
+
     #[test]
     fn cancel()
     {
