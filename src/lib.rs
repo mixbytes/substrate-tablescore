@@ -158,6 +158,8 @@ decl_module! {
             let table = Scores::<T>::get(table_id);
 
             assets::Module::<T>::make_transfer(&table.vote_asset, &who, &table.wallet, balance)?;
+            assets::Module::<T>::reserve(&table.vote_asset, &table.wallet, balance)?;
+
             Scores::<T>::mutate(&table_id, |table|  table.append_reward(target, balance) ).map_err(|_| Error::<T>::NoneValue)?;
 
             Ok(())
@@ -177,7 +179,7 @@ impl<T: Trait> Module<T>
                 *id = res;
                 result
             }
-            None => Err(Error::<T>::TableIdOverflow)
+            None => Err(Error::<T>::TableIdOverflow),
         })
     }
 
@@ -188,6 +190,7 @@ impl<T: Trait> Module<T>
         balance: Balance<T>,
     ) -> dispatch::DispatchResult
     {
+        assets::Module::<T>::unreserve(asset_id, wallet, balance);
         assets::Module::<T>::make_transfer(asset_id, wallet, who, balance)
     }
 }

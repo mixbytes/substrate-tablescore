@@ -36,7 +36,12 @@ impl<
         WalletType: Default + Encode + Decode,
     > Table<AssetId, VoterId, TargetType, BalanceType, PeriodType, WalletType>
 {
-    pub fn new(name: Option<RawString>, head_count: u8, vote_asset: AssetId, wallet: WalletType) -> Self
+    pub fn new(
+        name: Option<RawString>,
+        head_count: u8,
+        vote_asset: AssetId,
+        wallet: WalletType,
+    ) -> Self
     {
         Table {
             name,

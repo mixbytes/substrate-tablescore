@@ -50,9 +50,10 @@ impl<
         self.origin.insert(voter, self.get_current_period());
     }
 
-    pub fn increment_period(&mut self) 
+    pub fn increment_period(&mut self)
     {
-        self.rewards.insert(self.get_next_period(), self.current_reward.clone());
+        self.rewards
+            .insert(self.get_next_period(), self.current_reward.clone());
     }
 }
 
