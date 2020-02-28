@@ -117,7 +117,7 @@ decl_module! {
 
             match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, vote))
             {
-                VoteResult::Unvoted(unvote, reward) | VoteResult::UnvotedPart(unvote, reward) => {
+                VoteResult::Unvoted(unvote, reward) => {
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
                     if let Some(reward) = reward
                     {
@@ -138,7 +138,7 @@ decl_module! {
             let table = Scores::<T>::get(table_id);
             match Scores::<T>::mutate(&table_id, |table| table.cancel(target, &who))
             {
-                VoteResult::Unvoted(unvote, reward) | VoteResult::UnvotedPart(unvote, reward) =>
+                VoteResult::Unvoted(unvote, reward) =>
                 {
                     Self::deposit_event(RawEvent::CancelVote(table_id, target, who.clone()));
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);

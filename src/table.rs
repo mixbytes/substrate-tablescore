@@ -84,6 +84,7 @@ impl<
         target: TargetType,
         account: &VoterId,
         balance: BalanceType,
+        is_insert: bool,
         callback: F,
     ) -> VoteResult<BalanceType>
     where
@@ -100,7 +101,7 @@ impl<
             }
             None =>
             {
-                if balance != Zero::zero()
+                if is_insert && balance != Zero::zero()
                 {
                     self.targets.insert(
                         target,
@@ -141,7 +142,7 @@ impl<
         balance: BalanceType,
     ) -> VoteResult<BalanceType>
     {
-        self.process(target, voter, balance.clone(), |td| {
+        self.process(target, voter, balance.clone(), true, |td| {
             td.vote(voter.clone(), balance)
         })
     }
@@ -153,14 +154,14 @@ impl<
         balance: BalanceType,
     ) -> VoteResult<BalanceType>
     {
-        self.process(target, voter, balance.clone(), |td| {
+        self.process(target, voter, balance.clone(), false, |td| {
             td.unvote(voter, balance)
         })
     }
 
     pub fn cancel(&mut self, target: TargetType, account: &VoterId) -> VoteResult<BalanceType>
     {
-        self.process(target, account, Zero::zero(), |td| td.cancel(account))
+        self.process(target, account, Zero::zero(), false, |td| td.cancel(account))
     }
 
     pub fn get_head(&self) -> Vec<&TargetType>
@@ -261,10 +262,10 @@ mod tests
 
         compare_head(&table, vec![3, 2, 1]);
 
-        assert_eq!(table.unvote(3, &CAROL, 11), VR::UnvotedPart(11, None));
+        assert_eq!(table.unvote(3, &CAROL, 11), VR::Unvoted(11, None));
         compare_head(&table, vec![2, 3, 1]);
 
-        assert_eq!(table.unvote(2, &BOB, 6), VR::UnvotedPart(6, None));
+        assert_eq!(table.unvote(2, &BOB, 6), VR::Unvoted(6, None));
         compare_head(&table, vec![3, 1, 2]);
     }
 

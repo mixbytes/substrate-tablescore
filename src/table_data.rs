@@ -24,7 +24,6 @@ pub enum VoteResult<BalanceType>
 {
     Success(Option<BalanceType>),
     Unvoted(BalanceType, Option<BalanceType>),
-    UnvotedPart(BalanceType, Option<BalanceType>),
     VoteNotFound,
 }
 
@@ -77,7 +76,7 @@ impl<
                 Ordering::Less =>
                 {
                     self.total -= balance.clone();
-                    let res = VoteResult::UnvotedPart(
+                    let res = VoteResult::Unvoted(
                         balance,
                         self.rewarder
                             .pop_reward(account)
@@ -178,7 +177,7 @@ mod tests
     {
         ($data:ident, $( ($user:ident, $balance:expr, $reward:expr) ), * ) => {
             $(
-                assert_eq!($data.unvote(&$user, $balance), VR::UnvotedPart($balance, $reward));
+                assert_eq!($data.unvote(&$user, $balance), VR::Unvoted($balance, $reward));
             )*
         };
 
