@@ -101,8 +101,8 @@ decl_module! {
 
             match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, vote))
             {
-                VoteResult::Success => Ok(()),
-                VoteResult::SuccessRewardOwed(reward) => Self::send_reward(&table.vote_asset, &table.wallet, &who, reward),
+                VoteResult::Success(Some(reward)) => Self::send_reward(&table.vote_asset, &table.wallet, &who, reward),
+                VoteResult::Success(None) => Ok(()),
                 _ => Err(Error::<T>::NoneValue)?,
             }
         }
@@ -136,14 +136,11 @@ decl_module! {
             let who = ensure_signed(origin)?;
 
             let table = Scores::<T>::get(table_id);
-            let result = Scores::<T>::mutate(&table_id, |table| table.cancel(target, &who));
-
-            Self::deposit_event(RawEvent::CancelVote(table_id, target, who.clone()));
-
-            match result
+            match Scores::<T>::mutate(&table_id, |table| table.cancel(target, &who))
             {
                 VoteResult::Unvoted(unvote, reward) | VoteResult::UnvotedPart(unvote, reward) =>
                 {
+                    Self::deposit_event(RawEvent::CancelVote(table_id, target, who.clone()));
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
                     if let Some(reward) = reward
                     {
@@ -193,9 +190,9 @@ impl<T: Trait> Module<T>
         {
             Some(res) =>
             {
-                let result = Ok(*id);
+                let result = *id;
                 *id = res;
-                result
+                Ok(result)
             }
             None => Err(Error::<T>::TableIdOverflow),
         })

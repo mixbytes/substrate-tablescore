@@ -22,8 +22,7 @@ pub struct TargetData<
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum VoteResult<BalanceType>
 {
-    Success,
-    SuccessRewardOwed(BalanceType),
+    Success(Option<BalanceType>),
     Unvoted(BalanceType, Option<BalanceType>),
     UnvotedPart(BalanceType, Option<BalanceType>),
     VoteNotFound,
@@ -53,8 +52,8 @@ impl<
         {
             let res = match self.rewarder.pop_reward(&account)
             {
-                Some(reward) => VoteResult::SuccessRewardOwed(reward * *user_balance),
-                _ => VoteResult::Success,
+                Some(reward) => VoteResult::Success(Some(reward * *user_balance)),
+                _ => VoteResult::Success(None),
             };
             *user_balance += balance;
             self.rewarder.increment_period();
@@ -64,7 +63,7 @@ impl<
         {
             self.votes.insert(account.clone(), balance);
             self.rewarder.new_voter(account);
-            VoteResult::Success
+            VoteResult::Success(None)
         }
     }
 
@@ -120,15 +119,15 @@ impl<
         PeriodType: Default + BaseArithmetic + Copy,
     > RewardSharing for TargetData<VoterId, BalanceType, PeriodType>
 {
-    type RewardType = BalanceType;
+    type RewardBalance = BalanceType;
     type UserId = VoterId;
 
-    fn append_reward(&mut self, reward: Self::RewardType)
+    fn append_reward(&mut self, reward: Self::RewardBalance)
     {
         self.rewarder.append_reward(reward / self.total.clone());
     }
 
-    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardType>
+    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardBalance>
     {
         self.rewarder
             .pop_reward(user)
@@ -155,7 +154,7 @@ mod tests
             let mut expected = BTreeMap::new();
             $(
                 expected.insert($user, $balance);
-                assert_eq!($data.vote($user, $balance), VoteResult::Success);
+                assert_eq!($data.vote($user, $balance), VoteResult::Success(None));
             )*
             assert_eq!(expected, $data.votes);
         };
@@ -167,8 +166,8 @@ mod tests
 
                 assert_eq!($data.vote($user, $balance), match $reward
                     {
-                        Some(reward) => VR::SuccessRewardOwed(reward),
-                        None => VR::Success,
+                        Some(reward) => VR::Success(Some(reward)),
+                        None => VR::Success(None),
                     });
             )*
             assert_eq!(expected, $data.votes);

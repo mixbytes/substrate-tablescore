@@ -4,11 +4,11 @@ use sp_arithmetic::traits::{BaseArithmetic, One, Zero};
 
 pub trait RewardSharing
 {
-    type RewardType;
+    type RewardBalance;
     type UserId;
 
-    fn append_reward(&mut self, reward: Self::RewardType);
-    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardType>;
+    fn append_reward(&mut self, reward: Self::RewardBalance);
+    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardBalance>;
 }
 
 #[derive(Decode, Encode, Default, Eq, PartialEq, Clone)]
@@ -63,15 +63,15 @@ impl<
         VoterId: Ord,
     > RewardSharing for Rewarder<BalanceType, PeriodType, VoterId>
 {
-    type RewardType = BalanceType;
+    type RewardBalance = BalanceType;
     type UserId = VoterId;
 
-    fn append_reward(&mut self, reward: Self::RewardType)
+    fn append_reward(&mut self, reward: Self::RewardBalance)
     {
         self.current_reward += reward;
     }
 
-    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardType>
+    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardBalance>
     {
         let next_period = self.get_next_period();
 

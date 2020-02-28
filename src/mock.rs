@@ -65,7 +65,7 @@ impl Trait for Test
     type PeriodType = u32;
 }
 
-pub type TemplateModule = Module<Test>;
+pub type TablescoreModule = Module<Test>;
 
 // This function basically just builds a genesis storage key/value store according to
 // our desired mockup.
