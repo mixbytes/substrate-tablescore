@@ -36,6 +36,7 @@ type Table<T: Trait> = crate::table::Table<
     <T as Trait>::TargetType,
     Balance<T>,
     <T as Trait>::PeriodType,
+    <T as system::Trait>::AccountId,
 >;
 
 decl_storage! {
@@ -81,7 +82,7 @@ decl_module! {
             let who = ensure_signed(origin)?;
             let id = Self::get_next_table_id()?;
 
-            Scores::<T>::insert(id, Table::<T>::new(name, head_len, vote_asset));
+            Scores::<T>::insert(id, Table::<T>::new(name, head_len, vote_asset, who.clone())); // ToDo create normal wallet
 
             Self::deposit_event(RawEvent::TableCreated(id, who));
 
@@ -101,7 +102,7 @@ decl_module! {
                 VoteResult::Success => Ok(()),
                 VoteResult::SuccessRewardOwed(reward) =>
                 {
-                    Self::send_reward(who, table.vote_asset, reward);
+                    Self::send_reward(table.wallet, who, table.vote_asset, reward);
                     Ok(())
                 },
                 _ => Err(Error::<T>::NoneValue)?,
@@ -121,7 +122,7 @@ decl_module! {
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
                     if let Some(reward) = reward
                     {
-                        Self::send_reward(who, table.vote_asset, reward);
+                        Self::send_reward(table.wallet, who, table.vote_asset, reward);
                     }
                     Ok(())
                 },
@@ -134,9 +135,9 @@ decl_module! {
         {
             let who = ensure_signed(origin)?;
 
-            let (mut asset_id, mut result) = Scores::<T>::mutate(&table_id, |table|
+            let (mut asset_id, wallet, mut result) = Scores::<T>::mutate(&table_id, |table|
             {
-                (table.vote_asset, table.cancel(target, &who))
+                (table.vote_asset, table.wallet, table.cancel(target, &who))
             });
 
             Self::deposit_event(RawEvent::CancelVote(table_id, target, who.clone()));
@@ -148,7 +149,7 @@ decl_module! {
                     assets::Module::<T>::unreserve(&asset_id, &who, unvote);
                     if let Some(reward) = reward
                     {
-                        Self::send_reward(who, asset_id, reward);
+                        Self::send_reward(wallet, who, asset_id, reward);
                     }
                     Ok(())
                 },
@@ -159,7 +160,7 @@ decl_module! {
 
         pub fn append_reward(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType)
         {
-            todo!()
+            let table = Scores::<T>::get(table_id);
         }
     }
 }
@@ -186,8 +187,8 @@ impl<T: Trait> Module<T>
         result
     }
 
-    fn send_reward(who: T::AccountId, asset_id: AssetId<T>, balance: Balance<T>)
+    fn send_reward(wallet: T::AccountId, who: T::AccountId, asset_id: AssetId<T>, balance: Balance<T>)
     {
-        todo!()
+        assets::Module::<T>::transfer(wallet, asset_id, who, balance);
     }
 }

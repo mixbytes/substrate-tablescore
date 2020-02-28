@@ -16,12 +16,15 @@ pub struct Table<
     TargetType: Default + Ord + Encode + Decode,
     BalanceType: Default + Copy + BaseArithmetic + Zero + Encode + Decode,
     PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
+    WalletType: Default + Encode + Decode,
 > {
     pub name: Option<RawString>,
     head_count: u8,
     pub vote_asset: AssetId,
     pub scores: BTreeSet<Record<TargetType, BalanceType>>,
     pub targets: BTreeMap<TargetType, TargetData<VoterId, BalanceType, PeriodType>>,
+
+    pub wallet: WalletType,
 }
 
 impl<
@@ -30,14 +33,16 @@ impl<
         TargetType: Default + Ord + Copy + Encode + Decode,
         BalanceType: Default + Copy + BaseArithmetic + Clone + Encode + Decode,
         PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
-    > Table<AssetId, VoterId, TargetType, BalanceType, PeriodType>
+        WalletType: Default + Encode + Decode,
+    > Table<AssetId, VoterId, TargetType, BalanceType, PeriodType, WalletType>
 {
-    pub fn new(name: Option<RawString>, head_count: u8, vote_asset: AssetId) -> Self
+    pub fn new(name: Option<RawString>, head_count: u8, vote_asset: AssetId, wallet: WalletType) -> Self
     {
         Table {
             name,
             head_count,
             vote_asset,
+            wallet,
             scores: BTreeSet::default(),
             targets: BTreeMap::default(),
         }
@@ -121,7 +126,9 @@ impl<
         balance: BalanceType,
     ) -> VoteResult<BalanceType>
     {
-        self.process(target, voter, balance.clone(), |td| td.vote(voter.clone(), balance))
+        self.process(target, voter, balance.clone(), |td| {
+            td.vote(voter.clone(), balance)
+        })
     }
 
     pub fn unvote(
