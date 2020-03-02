@@ -20,9 +20,9 @@ pub struct TargetData<
 
 #[derive(PartialEq)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub enum VoteResult<BalanceType> {
-    Success(Option<BalanceType>),
-    Unvoted(BalanceType, Option<BalanceType>),
+pub enum VoteResult<VoteType, RewardType> {
+    Success(Option<RewardType>),
+    Unvoted(VoteType, Option<RewardType>),
     VoteNotFound,
 }
 
@@ -42,24 +42,32 @@ impl<
         res.rewarder.new_voter(first_voter);
         res
     }
-    pub fn vote(&mut self, account: VoterId, balance: BalanceType) -> VoteResult<BalanceType> {
-        self.total += balance.clone();
+    pub fn vote(
+        &mut self,
+        account: VoterId,
+        votes: BalanceType,
+    ) -> VoteResult<BalanceType, BalanceType> {
+        self.total += votes.clone();
         if let Some(user_balance) = self.votes.get_mut(&account) {
             let res = match self.rewarder.pop_reward(&account) {
                 Some(reward) => VoteResult::Success(Some(reward * *user_balance)),
                 _ => VoteResult::Success(None),
             };
-            *user_balance += balance;
+            *user_balance += votes;
             self.rewarder.increment_period();
             res
         } else {
-            self.votes.insert(account.clone(), balance);
+            self.votes.insert(account.clone(), votes);
             self.rewarder.new_voter(account);
             VoteResult::Success(None)
         }
     }
 
-    pub fn unvote(&mut self, account: &VoterId, balance: BalanceType) -> VoteResult<BalanceType> {
+    pub fn unvote(
+        &mut self,
+        account: &VoterId,
+        balance: BalanceType,
+    ) -> VoteResult<BalanceType, BalanceType> {
         if let Some(user_balance) = self.votes.get_mut(&account) {
             match balance.cmp(user_balance) {
                 Ordering::Greater | Ordering::Equal => self.cancel(account),
@@ -81,7 +89,7 @@ impl<
         }
     }
 
-    pub fn cancel(&mut self, account: &VoterId) -> VoteResult<BalanceType> {
+    pub fn cancel(&mut self, account: &VoterId) -> VoteResult<BalanceType, BalanceType> {
         match self.votes.remove(account) {
             Some(balance) => {
                 self.rewarder.increment_period();
@@ -120,8 +128,7 @@ impl<
 mod tests {
     use rstd::collections::btree_map::BTreeMap;
     type Data = super::TargetData<usize, u32, u32>;
-    type VoteResult = super::VoteResult<u32>;
-    type VR = super::VoteResult<u32>;
+    type VR = super::VoteResult<u32, u32>;
     use super::RewardSharing;
 
     const ALICE: usize = 10;
@@ -134,7 +141,7 @@ mod tests {
             let mut expected = BTreeMap::new();
             $(
                 expected.insert($user, $balance);
-                assert_eq!($data.vote($user, $balance), VoteResult::Success(None));
+                assert_eq!($data.vote($user, $balance), VR::Success(None));
             )*
             assert_eq!(expected, $data.votes);
         };

@@ -85,9 +85,11 @@ impl<
         balance: BalanceType,
         is_insert: bool,
         callback: F,
-    ) -> VoteResult<BalanceType>
+    ) -> VoteResult<BalanceType, BalanceType>
     where
-        F: FnOnce(&mut TargetData<VoterId, BalanceType, PeriodType>) -> VoteResult<BalanceType>,
+        F: FnOnce(
+            &mut TargetData<VoterId, BalanceType, PeriodType>,
+        ) -> VoteResult<BalanceType, BalanceType>,
     {
         let (result, old_balance, new_balance) = match self.targets.get_mut(&target) {
             Some(data) => {
@@ -129,7 +131,7 @@ impl<
         target: TargetType,
         voter: &VoterId,
         balance: BalanceType,
-    ) -> VoteResult<BalanceType> {
+    ) -> VoteResult<BalanceType, BalanceType> {
         self.process(target, voter, balance.clone(), true, |td| {
             td.vote(voter.clone(), balance)
         })
@@ -140,13 +142,17 @@ impl<
         target: TargetType,
         voter: &VoterId,
         balance: BalanceType,
-    ) -> VoteResult<BalanceType> {
+    ) -> VoteResult<BalanceType, BalanceType> {
         self.process(target, voter, balance.clone(), false, |td| {
             td.unvote(voter, balance)
         })
     }
 
-    pub fn cancel(&mut self, target: TargetType, account: &VoterId) -> VoteResult<BalanceType> {
+    pub fn cancel(
+        &mut self,
+        target: TargetType,
+        account: &VoterId,
+    ) -> VoteResult<BalanceType, BalanceType> {
         self.process(target, account, Zero::zero(), false, |td| {
             td.cancel(account)
         })
@@ -179,7 +185,7 @@ impl<
 #[cfg(test)]
 mod tests {
     type Table = super::Table<u8, u8, u8, u32, u32, u8>;
-    type VR = super::VoteResult<u32>;
+    type VR = super::VoteResult<u32, u32>;
 
     const ALICE: u8 = 10;
     const BOB: u8 = 11;
