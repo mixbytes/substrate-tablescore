@@ -6,6 +6,8 @@ use sp_arithmetic::traits::{BaseArithmetic, CheckedAdd, One};
 use sp_runtime::traits::Member;
 use system::ensure_signed;
 
+use rstd::prelude::Vec;
+
 mod record;
 mod reward_sharing;
 mod table;
@@ -45,7 +47,7 @@ decl_storage! {
     trait Store for Module<T: Trait> as TemplateModule
     {
         /// Tables by id
-        Scores get(fn tables): map hasher(blake2_256) T::TableId => Table<T>;
+        pub Scores get(fn tables): map hasher(blake2_256) T::TableId => Table<T>;
 
         /// Sequence for table id
         TableIdSequence get(fn next_table_id): T::TableId;
