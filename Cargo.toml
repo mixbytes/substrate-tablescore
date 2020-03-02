@@ -1,7 +1,7 @@
 [package]
 authors = ["sadsnake sadsnake@mixbytes.io"]
 edition = '2018'
-name = 'pallet-template'
+name = 'pallet-tablescore'
 version = '0.0.1'
 
 [dependencies]
