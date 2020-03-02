@@ -11,11 +11,16 @@ Pallet for work with table score.
 | ...       | ...   |
 
 ## Example
+// ToDo
 
 ## Terminology
+// ToDo
 
 ## Scenarios
+// ToDo
 
 ## Interface
+// ToDo
 
 ## Storage Items
+// ToDo
