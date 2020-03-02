@@ -34,7 +34,7 @@ pub trait Trait: system::Trait + assets::Trait
 type AssetId<T> = <T as assets::Trait>::AssetId;
 type Balance<T> = <T as assets::Trait>::Balance;
 
-type Table<T: Trait> = crate::table::Table<
+type Table<T> = crate::table::Table<
     AssetId<T>,
     <T as system::Trait>::AccountId,
     <T as Trait>::TargetType,
