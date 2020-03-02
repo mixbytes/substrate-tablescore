@@ -1,5 +1,7 @@
 use rstd::collections::{btree_map::BTreeMap, btree_set::BTreeSet};
 
+use rstd::prelude::Vec;
+
 use crate::record::*;
 use crate::reward_sharing::RewardSharing;
 use crate::table_data::*;
