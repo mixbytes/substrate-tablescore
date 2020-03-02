@@ -14,9 +14,9 @@ Pallet for work with table score.
 Example of selecting a subset of accounts by tablescore
 
 ```rust
-//pub trait Trait: tablescore::Trait<TargetType=AccountId<Self>> {
-//    ...
-//}
+pub trait Trait: tablescore::Trait<TargetType=AccountId<Self>> {
+    ...
+}
 
 decl_module! {
     pub struct Module<T: Trait> for enum Call where origin: T::Origin {
