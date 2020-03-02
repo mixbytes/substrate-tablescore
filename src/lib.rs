@@ -23,8 +23,10 @@ pub trait Trait: system::Trait + assets::Trait
 
     type TableId: Default + Parameter + Member + Copy + BaseArithmetic + CheckedAdd + One;
 
-    type TargetType: Default + Parameter + Ord + Copy;
     type PeriodType: Default + Parameter + BaseArithmetic + Copy;
+
+    /// Target for vote
+    type TargetType: Default + Parameter + Ord + Copy;
 }
 
 type AssetId<T> = <T as assets::Trait>::AssetId;
@@ -42,7 +44,10 @@ type Table<T: Trait> = crate::table::Table<
 decl_storage! {
     trait Store for Module<T: Trait> as TemplateModule
     {
+        /// Tables by id
         Scores get(fn tables): map hasher(blake2_256) T::TableId => Table<T>;
+
+        /// Sequence for table id
         TableIdSequence get(fn next_table_id): T::TableId;
     }
 }
@@ -56,7 +61,6 @@ decl_event!(
     {
         TableCreated(TableId, AccountId),
         ChangeVote(TableId, TargetType),
-        CancelVote(TableId, TargetType, AccountId),
     }
 );
 
@@ -140,7 +144,6 @@ decl_module! {
             {
                 VoteResult::Unvoted(unvote, reward) =>
                 {
-                    Self::deposit_event(RawEvent::CancelVote(table_id, target, who.clone()));
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
                     if let Some(reward) = reward
                     {
@@ -182,8 +185,7 @@ decl_module! {
     }
 }
 
-impl<T: Trait> Module<T>
-{
+impl<T: Trait> Module<T> {
     fn get_next_table_id() -> Result<T::TableId, Error<T>>
     {
         TableIdSequence::<T>::mutate(|id| match id.checked_add(&One::one())
