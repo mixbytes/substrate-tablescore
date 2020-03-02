@@ -25,8 +25,7 @@ parameter_types! {
     pub const AvailableBlockRatio: Perbill = Perbill::from_percent(75);
 }
 
-impl system::Trait for Test
-{
+impl system::Trait for Test {
     type Origin = Origin;
     type Call = ();
     type Index = u64;
@@ -48,16 +47,14 @@ impl system::Trait for Test
     type OnReapAccount = ();
 }
 
-impl assets::Trait for Test
-{
+impl assets::Trait for Test {
     type Event = ();
 
     type Balance = u128;
     type AssetId = u32;
 }
 
-impl Trait for Test
-{
+impl Trait for Test {
     type Event = ();
     type TargetType = u32;
     type TableId = u32;
@@ -69,8 +66,7 @@ pub type TablescoreModule = Module<Test>;
 
 // This function basically just builds a genesis storage key/value store according to
 // our desired mockup.
-pub fn new_test_ext() -> sp_io::TestExternalities
-{
+pub fn new_test_ext() -> sp_io::TestExternalities {
     system::GenesisConfig::default()
         .build_storage::<Test>()
         .unwrap()

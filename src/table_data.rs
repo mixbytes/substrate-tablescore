@@ -20,8 +20,7 @@ pub struct TargetData<
 
 #[derive(PartialEq)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub enum VoteResult<BalanceType>
-{
+pub enum VoteResult<BalanceType> {
     Success(Option<BalanceType>),
     Unvoted(BalanceType, Option<BalanceType>),
     VoteNotFound,
@@ -33,8 +32,7 @@ impl<
         PeriodType: Default + BaseArithmetic + Copy,
     > TargetData<VoterId, BalanceType, PeriodType>
 {
-    pub fn create_with_first_vote(first_voter: VoterId, balance: BalanceType) -> Self
-    {
+    pub fn create_with_first_vote(first_voter: VoterId, balance: BalanceType) -> Self {
         let mut res = TargetData {
             total: balance.clone(),
             votes: BTreeMap::new(),
@@ -44,37 +42,28 @@ impl<
         res.rewarder.new_voter(first_voter);
         res
     }
-    pub fn vote(&mut self, account: VoterId, balance: BalanceType) -> VoteResult<BalanceType>
-    {
+    pub fn vote(&mut self, account: VoterId, balance: BalanceType) -> VoteResult<BalanceType> {
         self.total += balance.clone();
-        if let Some(user_balance) = self.votes.get_mut(&account)
-        {
-            let res = match self.rewarder.pop_reward(&account)
-            {
+        if let Some(user_balance) = self.votes.get_mut(&account) {
+            let res = match self.rewarder.pop_reward(&account) {
                 Some(reward) => VoteResult::Success(Some(reward * *user_balance)),
                 _ => VoteResult::Success(None),
             };
             *user_balance += balance;
             self.rewarder.increment_period();
             res
-        }
-        else
-        {
+        } else {
             self.votes.insert(account.clone(), balance);
             self.rewarder.new_voter(account);
             VoteResult::Success(None)
         }
     }
 
-    pub fn unvote(&mut self, account: &VoterId, balance: BalanceType) -> VoteResult<BalanceType>
-    {
-        if let Some(user_balance) = self.votes.get_mut(&account)
-        {
-            match balance.cmp(user_balance)
-            {
+    pub fn unvote(&mut self, account: &VoterId, balance: BalanceType) -> VoteResult<BalanceType> {
+        if let Some(user_balance) = self.votes.get_mut(&account) {
+            match balance.cmp(user_balance) {
                 Ordering::Greater | Ordering::Equal => self.cancel(account),
-                Ordering::Less =>
-                {
+                Ordering::Less => {
                     self.total -= balance.clone();
                     let res = VoteResult::Unvoted(
                         balance,
@@ -87,19 +76,14 @@ impl<
                     res
                 }
             }
-        }
-        else
-        {
+        } else {
             VoteResult::VoteNotFound
         }
     }
 
-    pub fn cancel(&mut self, account: &VoterId) -> VoteResult<BalanceType>
-    {
-        match self.votes.remove(account)
-        {
-            Some(balance) =>
-            {
+    pub fn cancel(&mut self, account: &VoterId) -> VoteResult<BalanceType> {
+        match self.votes.remove(account) {
+            Some(balance) => {
                 self.rewarder.increment_period();
                 self.total -= balance.clone();
                 VoteResult::Unvoted(
@@ -121,13 +105,11 @@ impl<
     type RewardBalance = BalanceType;
     type UserId = VoterId;
 
-    fn append_reward(&mut self, reward: Self::RewardBalance)
-    {
+    fn append_reward(&mut self, reward: Self::RewardBalance) {
         self.rewarder.append_reward(reward / self.total.clone());
     }
 
-    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardBalance>
-    {
+    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardBalance> {
         self.rewarder
             .pop_reward(user)
             .and_then(|rew| self.votes.get(&user).map(|count| *count * rew))
@@ -135,8 +117,7 @@ impl<
 }
 
 #[cfg(test)]
-mod tests
-{
+mod tests {
     use rstd::collections::btree_map::BTreeMap;
     type Data = super::TargetData<usize, u32, u32>;
     type VoteResult = super::VoteResult<u32>;
@@ -191,23 +172,20 @@ mod tests
     }
 
     #[test]
-    fn simple()
-    {
+    fn simple() {
         let data = Data::create_with_first_vote(ALICE, 100);
         assert_eq!(data.total, 100);
         assert_eq!(data.votes.len(), 1);
     }
 
     #[test]
-    fn vote()
-    {
+    fn vote() {
         let mut data = Data::default();
         vote_assert!(data, (ALICE, 200), (BOB, 300), (CARL, 400));
     }
 
     #[test]
-    fn reward()
-    {
+    fn reward() {
         let mut data = Data::default();
         vote_assert!(data, (ALICE, 200), (BOB, 400), (CARL, 400));
         data.append_reward(1000);
@@ -223,8 +201,7 @@ mod tests
     }
 
     #[test]
-    fn unvote()
-    {
+    fn unvote() {
         let mut data = Data::default();
         vote_assert!(data, (ALICE, 400), (BOB, 400), (CARL, 400));
         data.append_reward(1200);
@@ -239,8 +216,7 @@ mod tests
     }
 
     #[test]
-    fn cancel()
-    {
+    fn cancel() {
         let mut data = Data::default();
         data.vote(CARL, 1000);
 

@@ -2,8 +2,7 @@ use codec::{Decode, Encode};
 use rstd::collections::btree_map::BTreeMap;
 use sp_arithmetic::traits::{BaseArithmetic, One, Zero};
 
-pub trait RewardSharing
-{
+pub trait RewardSharing {
     type RewardBalance;
     type UserId;
 
@@ -13,8 +12,7 @@ pub trait RewardSharing
 
 #[derive(Decode, Encode, Default, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Rewarder<BalanceType: BaseArithmetic, PeriodType: Ord, VoterId: Ord>
-{
+pub struct Rewarder<BalanceType: BaseArithmetic, PeriodType: Ord, VoterId: Ord> {
     current_reward: BalanceType,
     rewards: BTreeMap<PeriodType, BalanceType>,
     origin: BTreeMap<VoterId, PeriodType>,
@@ -26,32 +24,26 @@ impl<
         VoterId: Ord,
     > Rewarder<BalanceType, PeriodType, VoterId>
 {
-    pub fn get_current_period(&self) -> PeriodType
-    {
-        match self.rewards.last_key_value()
-        {
+    pub fn get_current_period(&self) -> PeriodType {
+        match self.rewards.last_key_value() {
             Some((key, _value)) => *key,
             None => PeriodType::default(),
         }
     }
 
-    fn get_next_period(&self) -> PeriodType
-    {
-        match self.rewards.last_key_value()
-        {
+    fn get_next_period(&self) -> PeriodType {
+        match self.rewards.last_key_value() {
             Some((key, _value)) => *key + One::one(),
             None => PeriodType::default(),
         }
     }
 
-    pub fn new_voter(&mut self, voter: VoterId)
-    {
+    pub fn new_voter(&mut self, voter: VoterId) {
         self.increment_period();
         self.origin.insert(voter, self.get_current_period());
     }
 
-    pub fn increment_period(&mut self)
-    {
+    pub fn increment_period(&mut self) {
         self.rewards
             .insert(self.get_next_period(), self.current_reward.clone());
     }
@@ -66,28 +58,21 @@ impl<
     type RewardBalance = BalanceType;
     type UserId = VoterId;
 
-    fn append_reward(&mut self, reward: Self::RewardBalance)
-    {
+    fn append_reward(&mut self, reward: Self::RewardBalance) {
         self.current_reward += reward;
     }
 
-    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardBalance>
-    {
+    fn pop_reward(&mut self, user: &Self::UserId) -> Option<Self::RewardBalance> {
         let next_period = self.get_next_period();
 
-        match self.origin.get_mut(user)
-        {
-            Some(start) =>
-            {
+        match self.origin.get_mut(user) {
+            Some(start) => {
                 let res = self.current_reward - *self.rewards.get(start)?;
                 *start = next_period;
 
-                if res != Zero::zero()
-                {
+                if res != Zero::zero() {
                     Some(res)
-                }
-                else
-                {
+                } else {
                     None
                 }
             }
@@ -97,8 +82,7 @@ impl<
 }
 
 #[cfg(test)]
-mod tests_reward_sharing
-{
+mod tests_reward_sharing {
     use super::RewardSharing;
     type Rewarder = super::Rewarder<u32, u8, u8>;
 
@@ -107,8 +91,7 @@ mod tests_reward_sharing
     const CAROL: u8 = 2;
 
     #[test]
-    fn simple_sharing()
-    {
+    fn simple_sharing() {
         let mut target = Rewarder::default();
         target.new_voter(ALICE);
         target.new_voter(BOB);

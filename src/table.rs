@@ -53,8 +53,7 @@ impl<
         head_count: u8,
         vote_asset: AssetId,
         wallet: WalletType,
-    ) -> Self
-    {
+    ) -> Self {
         Table {
             name,
             head_count,
@@ -70,12 +69,10 @@ impl<
         target: TargetType,
         old_balance: BalanceType,
         new_balance: BalanceType,
-    )
-    {
+    ) {
         let mut rec = Record::new(target, old_balance);
         self.scores.remove(&rec);
-        if new_balance != Zero::zero()
-        {
+        if new_balance != Zero::zero() {
             rec.balance = new_balance;
             self.scores.insert(rec);
         }
@@ -92,40 +89,30 @@ impl<
     where
         F: FnOnce(&mut TargetData<VoterId, BalanceType, PeriodType>) -> VoteResult<BalanceType>,
     {
-        let (result, old_balance, new_balance) = match self.targets.get_mut(&target)
-        {
-            Some(data) =>
-            {
+        let (result, old_balance, new_balance) = match self.targets.get_mut(&target) {
+            Some(data) => {
                 let old_balance = data.total.clone();
                 let res = callback(data);
 
                 (res, old_balance, data.total.clone())
             }
-            None =>
-            {
-                if is_insert && balance != Zero::zero()
-                {
+            None => {
+                if is_insert && balance != Zero::zero() {
                     self.targets.insert(
                         target,
                         TargetData::create_with_first_vote(account.clone(), balance.clone()),
                     );
                     (VoteResult::Success(None), Zero::zero(), balance)
-                }
-                else
-                {
+                } else {
                     (VoteResult::VoteNotFound, Zero::zero(), balance)
                 }
             }
         };
 
-        match &result
-        {
-            VoteResult::VoteNotFound =>
-            {}
-            VoteResult::Unvoted(_unvoted, _reward) =>
-            {
-                if new_balance == Zero::zero()
-                {
+        match &result {
+            VoteResult::VoteNotFound => {}
+            VoteResult::Unvoted(_unvoted, _reward) => {
+                if new_balance == Zero::zero() {
                     self.targets.remove(&target);
                 }
 
@@ -142,8 +129,7 @@ impl<
         target: TargetType,
         voter: &VoterId,
         balance: BalanceType,
-    ) -> VoteResult<BalanceType>
-    {
+    ) -> VoteResult<BalanceType> {
         self.process(target, voter, balance.clone(), true, |td| {
             td.vote(voter.clone(), balance)
         })
@@ -154,20 +140,19 @@ impl<
         target: TargetType,
         voter: &VoterId,
         balance: BalanceType,
-    ) -> VoteResult<BalanceType>
-    {
+    ) -> VoteResult<BalanceType> {
         self.process(target, voter, balance.clone(), false, |td| {
             td.unvote(voter, balance)
         })
     }
 
-    pub fn cancel(&mut self, target: TargetType, account: &VoterId) -> VoteResult<BalanceType>
-    {
-        self.process(target, account, Zero::zero(), false, |td| td.cancel(account))
+    pub fn cancel(&mut self, target: TargetType, account: &VoterId) -> VoteResult<BalanceType> {
+        self.process(target, account, Zero::zero(), false, |td| {
+            td.cancel(account)
+        })
     }
 
-    pub fn get_head(&self) -> Vec<&TargetType>
-    {
+    pub fn get_head(&self) -> Vec<&TargetType> {
         self.scores
             .iter()
             .take(self.head_count as usize)
@@ -175,30 +160,24 @@ impl<
             .collect()
     }
 
-    pub fn pop_reward(&mut self, user: &VoterId, target: TargetType) -> Option<BalanceType>
-    {
+    pub fn pop_reward(&mut self, user: &VoterId, target: TargetType) -> Option<BalanceType> {
         self.targets
             .get_mut(&target)
             .and_then(|data| data.pop_reward(user))
     }
 
-    pub fn append_reward(&mut self, target: TargetType, reward: BalanceType) -> Result<(), ()>
-    {
-        if let Some(data) = self.targets.get_mut(&target)
-        {
+    pub fn append_reward(&mut self, target: TargetType, reward: BalanceType) -> Result<(), ()> {
+        if let Some(data) = self.targets.get_mut(&target) {
             data.append_reward(reward);
             Ok(())
-        }
-        else
-        {
+        } else {
             Err(())
         }
     }
 }
 
 #[cfg(test)]
-mod tests
-{
+mod tests {
     type Table = super::Table<u8, u8, u8, u32, u32, u8>;
     type VR = super::VoteResult<u32>;
 
@@ -209,8 +188,7 @@ mod tests
 
     const WALLET: u8 = 0;
 
-    fn compare_head(table: &Table, expected: Vec<u8>)
-    {
+    fn compare_head(table: &Table, expected: Vec<u8>) {
         assert_eq!(
             expected,
             table.get_head().into_iter().cloned().collect::<Vec<u8>>(),
@@ -218,15 +196,13 @@ mod tests
     }
 
     #[test]
-    fn create()
-    {
+    fn create() {
         let table = Table::new(None, 2, 0, WALLET);
         assert_eq!(table.get_head().len(), 0);
     }
 
     #[test]
-    fn simple_vote()
-    {
+    fn simple_vote() {
         let mut table = Table::new(None, 2, 0, WALLET);
         assert_eq!(table.vote(0, &ALICE, 10), VR::Success(None));
         assert_eq!(table.vote(1, &BOB, 11), VR::Success(None));
@@ -236,8 +212,7 @@ mod tests
     }
 
     #[test]
-    fn supplement_vote()
-    {
+    fn supplement_vote() {
         let mut table = Table::new(None, 2, 0, WALLET);
 
         assert_eq!(table.vote(0, &ALICE, 10), VR::Success(None));
@@ -254,8 +229,7 @@ mod tests
     }
 
     #[test]
-    fn unvote()
-    {
+    fn unvote() {
         let mut table = Table::new(None, 3, 0, WALLET);
 
         assert_eq!(table.vote(1, &ALICE, 5), VR::Success(None));
@@ -272,8 +246,7 @@ mod tests
     }
 
     #[test]
-    fn multivote()
-    {
+    fn multivote() {
         let mut table = Table::new(None, 2, 0, WALLET);
 
         assert_eq!(table.vote(0, &ALICE, 10), VR::Success(None));
@@ -291,8 +264,7 @@ mod tests
     }
 
     #[test]
-    fn cancel_vote()
-    {
+    fn cancel_vote() {
         let mut table = Table::new(None, 2, 0, WALLET);
 
         assert_eq!(table.vote(0, &ALICE, 10), VR::Success(None));

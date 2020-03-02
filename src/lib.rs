@@ -19,8 +19,7 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-pub trait Trait: system::Trait + assets::Trait
-{
+pub trait Trait: system::Trait + assets::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
     type TableId: Default + Parameter + Member + Copy + BaseArithmetic + CheckedAdd + One;
@@ -44,8 +43,7 @@ type Table<T> = crate::table::Table<
 >;
 
 decl_storage! {
-    trait Store for Module<T: Trait> as TemplateModule
-    {
+    trait Store for Module<T: Trait> as TemplateModule {
         /// Tables by id
         pub Scores get(fn tables): map hasher(blake2_256) T::TableId => Table<T>;
 
@@ -59,16 +57,14 @@ decl_event!(
     where
         AccountId = <T as system::Trait>::AccountId,
         TableId = <T as Trait>::TableId,
-        TargetType = <T as Trait>::TargetType,
-    {
+        TargetType = <T as Trait>::TargetType, {
         TableCreated(TableId, AccountId),
         ChangeVote(TableId, TargetType),
     }
 );
 
 decl_error! {
-    pub enum Error for Module<T: Trait>
-    {
+    pub enum Error for Module<T: Trait> {
         TableIdOverflow,
         VoteNotFound,
         NoneValue,
@@ -84,8 +80,7 @@ decl_module! {
         fn deposit_event() = default;
 
         /// Creating new table and emit event
-        pub fn create_table(origin, vote_asset: AssetId<T>, head_len: u8, name: Option<Vec<u8>>) -> dispatch::DispatchResult
-        {
+        pub fn create_table(origin, vote_asset: AssetId<T>, head_len: u8, name: Option<Vec<u8>>) -> dispatch::DispatchResult {
             let who = ensure_signed(origin)?;
             let id = Self::get_next_table_id()?;
 
@@ -97,16 +92,14 @@ decl_module! {
         }
 
         /// Vote for the target
-        pub fn vote(origin, table_id: T::TableId, vote: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
-        {
+        pub fn vote(origin, table_id: T::TableId, vote: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
             assets::Module::<T>::reserve(&table.vote_asset, &who, vote)?;
 
             Self::deposit_event(RawEvent::ChangeVote(table_id, target));
 
-            match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, vote))
-            {
+            match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, vote)) {
                 VoteResult::Success(Some(reward)) => Self::send_reward(&table.vote_asset, &table.wallet, &who, reward),
                 VoteResult::Success(None) => Ok(()),
                 _ => Err(Error::<T>::NoneValue)?,
@@ -114,19 +107,16 @@ decl_module! {
         }
 
         /// Unvote for the target
-        pub fn unvote(origin, table_id: T::TableId, vote: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
-        {
+        pub fn unvote(origin, table_id: T::TableId, vote: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
 
             Self::deposit_event(RawEvent::ChangeVote(table_id, target));
 
-            match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, vote))
-            {
+            match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, vote)) {
                 VoteResult::Unvoted(unvote, reward) => {
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
-                    if let Some(reward) = reward
-                    {
+                    if let Some(reward) = reward {
                         Self::send_reward(&table.vote_asset, &table.wallet, &who, reward)?;
                     }
                     Ok(())
@@ -142,13 +132,10 @@ decl_module! {
             let who = ensure_signed(origin)?;
 
             let table = Scores::<T>::get(table_id);
-            match Scores::<T>::mutate(&table_id, |table| table.cancel(target, &who))
-            {
-                VoteResult::Unvoted(unvote, reward) =>
-                {
+            match Scores::<T>::mutate(&table_id, |table| table.cancel(target, &who)) {
+                VoteResult::Unvoted(unvote, reward) => {
                     assets::Module::<T>::unreserve(&table.vote_asset, &who, unvote);
-                    if let Some(reward) = reward
-                    {
+                    if let Some(reward) = reward {
                         Self::send_reward(&table.vote_asset, &table.wallet, &who, reward)?;
                     }
                     Ok(())
@@ -159,8 +146,7 @@ decl_module! {
         }
 
         /// Store reward for target
-        pub fn append_reward(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult
-        {
+        pub fn append_reward(origin, table_id: T::TableId, balance: Balance<T>, target: T::TargetType) -> dispatch::DispatchResult {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
 
@@ -173,13 +159,11 @@ decl_module! {
         }
 
         /// Pick up your reward for target
-        pub fn pop_reward(origin, table_id: T::TableId, target: T::TargetType) -> dispatch::DispatchResult
-        {
+        pub fn pop_reward(origin, table_id: T::TableId, target: T::TargetType) -> dispatch::DispatchResult {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
 
-            if let Some(reward) = Scores::<T>::mutate(&table_id, |table| table.pop_reward(&who, target))
-            {
+            if let Some(reward) = Scores::<T>::mutate(&table_id, |table| table.pop_reward(&who, target)) {
                 Self::send_reward(&table.vote_asset, &table.wallet, &who, reward)?;
             }
             Ok(())
@@ -188,12 +172,9 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-    fn get_next_table_id() -> Result<T::TableId, Error<T>>
-    {
-        TableIdSequence::<T>::mutate(|id| match id.checked_add(&One::one())
-        {
-            Some(res) =>
-            {
+    fn get_next_table_id() -> Result<T::TableId, Error<T>> {
+        TableIdSequence::<T>::mutate(|id| match id.checked_add(&One::one()) {
+            Some(res) => {
                 let result = *id;
                 *id = res;
                 Ok(result)
@@ -207,8 +188,7 @@ impl<T: Trait> Module<T> {
         wallet: &T::AccountId,
         who: &T::AccountId,
         balance: Balance<T>,
-    ) -> dispatch::DispatchResult
-    {
+    ) -> dispatch::DispatchResult {
         assets::Module::<T>::make_transfer(
             asset_id,
             wallet,

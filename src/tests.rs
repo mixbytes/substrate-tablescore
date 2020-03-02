@@ -14,8 +14,7 @@ const TARGET2: TargetType = 2;
 const TARGET3: TargetType = 3;
 
 #[test]
-fn create()
-{
+fn create() {
     new_test_ext().execute_with(|| {
         let table = TablescoreModule::next_table_id();
         assert_ok!(TablescoreModule::create_table(
@@ -37,8 +36,7 @@ fn create()
 }
 
 #[test]
-fn vote()
-{
+fn vote() {
     new_test_ext().execute_with(|| {
         let table = TablescoreModule::next_table_id();
         assert_ok!(TablescoreModule::create_table(
@@ -62,13 +60,22 @@ fn vote()
         let head: Vec<TargetType> = table.get_head().into_iter().map(|v| *v).collect();
         assert_eq!(head, vec![TARGET3, TARGET2, TARGET1]);
 
-        assert_eq!(table.unvote(TARGET3, &BOB, 100), VoteResult::Unvoted(100, None));
-        assert_eq!(table.unvote(TARGET2, &BOB, 50), VoteResult::Unvoted(50, None));
+        assert_eq!(
+            table.unvote(TARGET3, &BOB, 100),
+            VoteResult::Unvoted(100, None)
+        );
+        assert_eq!(
+            table.unvote(TARGET2, &BOB, 50),
+            VoteResult::Unvoted(50, None)
+        );
 
         let head: Vec<TargetType> = table.get_head().into_iter().map(|v| *v).collect();
         assert_eq!(head, vec![TARGET1, TARGET2, TARGET3]);
 
-        assert_eq!(table.unvote(TARGET2, &BOB, 101), VoteResult::Unvoted(101, None));
+        assert_eq!(
+            table.unvote(TARGET2, &BOB, 101),
+            VoteResult::Unvoted(101, None)
+        );
         let head: Vec<TargetType> = table.get_head().into_iter().map(|v| *v).collect();
         assert_eq!(head, vec![TARGET1, TARGET3]);
 
