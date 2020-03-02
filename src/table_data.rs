@@ -42,6 +42,7 @@ impl<
         res.rewarder.new_voter(first_voter);
         res
     }
+
     pub fn vote(
         &mut self,
         account: VoterId,
@@ -225,16 +226,29 @@ mod tests {
     #[test]
     fn cancel() {
         let mut data = Data::default();
-        data.vote(CARL, 1000);
+        assert_eq!(data.vote(CARL, 1000), VR::Success(None));
 
-        data.vote(ALICE, 100);
-        data.vote(BOB, 100);
+        assert_eq!(data.vote(ALICE, 100), VR::Success(None));
+        assert_eq!(data.vote(BOB, 100), VR::Success(None));
         data.append_reward(42123);
 
-        data.vote(ALICE, 100);
+        assert_eq!(data.vote(ALICE, 100), VR::Success(Some(3500)));
         data.append_reward(12423);
 
-        data.vote(BOB, 100);
+        assert_eq!(data.vote(BOB, 100), VR::Success(Some(4400)));
         data.append_reward(20423);
+
+        assert_eq!(data.cancel(&ALICE), VR::Unvoted(200, Some(4600)));
+        data.append_reward(20423);
+
+        assert_eq!(data.cancel(&BOB), VR::Unvoted(200, Some(6200)));
+        data.append_reward(20423);
+
+        assert_eq!(data.pop_reward(&CARL), Some(95000));
+        assert_eq!(data.cancel(&CARL), VR::Unvoted(1000, None));
+
+        assert_eq!(data.pop_reward(&ALICE), None);
+        assert_eq!(data.pop_reward(&BOB), None);
+        assert_eq!(data.pop_reward(&CARL), None);
     }
 }
