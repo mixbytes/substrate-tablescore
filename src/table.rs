@@ -42,7 +42,7 @@ pub struct Table<
 impl<
         AssetId: Default + Encode + Decode,
         VoterId: Default + Ord + Encode + Decode + Clone,
-        TargetType: Default + Ord + Copy + Encode + Decode,
+        TargetType: Default + Ord + Clone + Encode + Decode,
         BalanceType: Default + Copy + BaseArithmetic + Clone + Encode + Decode,
         PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
         WalletType: Default + Encode + Decode,
@@ -101,7 +101,7 @@ impl<
             None => {
                 if is_insert && balance != Zero::zero() {
                     self.targets.insert(
-                        target,
+                        target.clone(),
                         TargetData::create_with_first_vote(account.clone(), balance.clone()),
                     );
                     (VoteResult::Success(None), Zero::zero(), balance)

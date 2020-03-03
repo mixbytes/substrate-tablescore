@@ -27,7 +27,7 @@ pub trait Trait: system::Trait + assets::Trait {
     type PeriodType: Default + Parameter + BaseArithmetic + Copy;
 
     /// Target for vote
-    type TargetType: Default + Parameter + Ord + Copy;
+    type TargetType: Default + Parameter + Ord + Clone;
 }
 
 type AssetId<T> = <T as assets::Trait>::AssetId;
@@ -95,7 +95,7 @@ decl_module! {
             let table = Scores::<T>::get(table_id);
             assets::Module::<T>::reserve(&table.vote_asset, &who, vote)?;
 
-            Self::deposit_event(RawEvent::ChangeVote(table_id, target));
+            Self::deposit_event(RawEvent::ChangeVote(table_id, target.clone()));
 
             match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, vote)) {
                 VoteResult::Success(Some(reward)) => Self::send_reward(&table.vote_asset, &table.wallet, &who, reward),
@@ -109,7 +109,7 @@ decl_module! {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
 
-            Self::deposit_event(RawEvent::ChangeVote(table_id, target));
+            Self::deposit_event(RawEvent::ChangeVote(table_id, target.clone()));
 
             match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, vote)) {
                 VoteResult::Unvoted(unvote, reward) => {
