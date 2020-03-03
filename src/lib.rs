@@ -58,10 +58,10 @@ decl_event!(
     where
         AccountId = <T as system::Trait>::AccountId,
         TableId = <T as Trait>::TableId,
-        TargetType = <T as Trait>::TargetType
+        //TargetType = <T as Trait>::TargetType,
     {
         TableCreated(TableId, AccountId),
-        ChangeVote(TableId, TargetType),
+        //ChangeVote(TableId, TargetType),
     }
 );
 
@@ -96,7 +96,7 @@ decl_module! {
             let table = Scores::<T>::get(table_id);
             assets::Module::<T>::reserve(&table.vote_asset, &who, vote)?;
 
-            Self::deposit_event(Event::<T>::ChangeVote(table_id, target.clone()));
+            //Self::deposit_event(Event::<T>::ChangeVote(table_id, target.clone()));
 
             match Scores::<T>::mutate(&table_id, |table| table.vote(target, &who, vote)) {
                 VoteResult::Success(Some(reward)) => Self::send_reward(&table.vote_asset, &table.wallet, &who, reward),
@@ -110,7 +110,7 @@ decl_module! {
             let who = ensure_signed(origin)?;
             let table = Scores::<T>::get(table_id);
 
-            Self::deposit_event(Event::<T>::ChangeVote(table_id, target.clone()));
+            //Self::deposit_event(Event::<T>::ChangeVote(table_id, target.clone()));
 
             match Scores::<T>::mutate(&table_id, |table| table.unvote(target, &who, vote)) {
                 VoteResult::Unvoted(unvote, reward) => {
