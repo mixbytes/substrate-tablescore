@@ -32,10 +32,11 @@ pub trait Trait: system::Trait + assets::Trait {
 
 type AssetId<T> = <T as assets::Trait>::AssetId;
 type Balance<T> = <T as assets::Trait>::Balance;
+type AccountId<T> = <T as system::Trait>::AccountId;
 
 type Table<T> = crate::table::Table<
     AssetId<T>,
-    <T as system::Trait>::AccountId,
+    AccountId<T>,
     <T as Trait>::TargetType,
     Balance<T>,
     <T as Trait>::PeriodType,
@@ -82,10 +83,7 @@ decl_module! {
         /// Creating new table and emit event
         pub fn create_table(origin, vote_asset: AssetId<T>, head_len: u8, name: Option<Vec<u8>>) -> dispatch::DispatchResult {
             let who = ensure_signed(origin)?;
-            let id = Self::get_next_table_id()?;
-
-            Scores::<T>::insert(id, Table::<T>::new(name, head_len, vote_asset, who.clone())); // ToDo create normal wallet
-
+            let id = Self::create(who.clone(), vote_asset, head_len, name)?;
             Self::deposit_event(RawEvent::TableCreated(id, who));
 
             Ok(())
@@ -172,6 +170,14 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
+
+    pub fn create(who: AccountId<T>, vote_asset: AssetId<T>, head_len: u8, name: Option<Vec<u8>>) -> Result<T::TableId, Error<T>>
+    {
+        let id = Self::get_next_table_id()?;
+        Scores::<T>::insert(id, Table::<T>::new(name, head_len, vote_asset, who)); // ToDo create normal wallet
+        Ok(id)
+    }
+
     fn get_next_table_id() -> Result<T::TableId, Error<T>> {
         TableIdSequence::<T>::mutate(|id| match id.checked_add(&One::one()) {
             Some(res) => {
