@@ -2,7 +2,7 @@
 authors = ["sadsnake sadsnake@mixbytes.io"]
 edition = '2018'
 name = 'pallet-tablescore'
-version = '0.0.1'
+version = '0.1.0'
 
 [dependencies]
 safe-mix = { default-features = false, version = '1.0.0' }
