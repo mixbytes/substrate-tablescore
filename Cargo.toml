@@ -2,7 +2,7 @@
 authors = ["sadsnake sadsnake@mixbytes.io"]
 edition = '2018'
 name = 'pallet-tablescore'
-version = '0.0.1'
+version = '0.1.0'
 
 [dependencies]
 safe-mix = { default-features = false, version = '1.0.0' }
@@ -33,6 +33,10 @@ rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
 [dev-dependencies.sp-core]
 default-features = false
 git = "https://github.com/paritytech/substrate"
+<<<<<<< HEAD
+=======
+package = "sp-core"
+>>>>>>> 849fc64d6e38693eeeacc0076b282b7b199a0db2
 rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
 
 [dev-dependencies.sp-io]
