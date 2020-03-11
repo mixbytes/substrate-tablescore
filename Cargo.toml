@@ -33,10 +33,7 @@ rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
 [dev-dependencies.sp-core]
 default-features = false
 git = "https://github.com/paritytech/substrate"
-<<<<<<< HEAD
-=======
 package = "sp-core"
->>>>>>> 849fc64d6e38693eeeacc0076b282b7b199a0db2
 rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
 
 [dev-dependencies.sp-io]
