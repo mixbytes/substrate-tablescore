@@ -1,11 +1,12 @@
 #![feature(map_first_last)]
 #![cfg_attr(not(feature = "std"), no_std)]
-use crate::table_data::VoteResult;
+
 use frame_support::{decl_error, decl_event, decl_module, decl_storage, dispatch, Parameter};
 use sp_arithmetic::traits::{BaseArithmetic, CheckedAdd, One};
 use sp_runtime::traits::Member;
 use system::ensure_signed;
 
+use crate::table_data::VoteResult;
 use rstd::prelude::Vec;
 
 mod record;
