@@ -5,60 +5,58 @@ name = 'pallet-tablescore'
 version = '0.1.0'
 
 [dependencies]
+serde = { version = "1.0.101", optional = true }
+codec = { package = "parity-scale-codec", version = "1.2.0", default-features = false, features = ["derive"] }
 safe-mix = { default-features = false, version = '1.0.0' }
-
-[dependencies.codec]
-package = "parity-scale-codec"
-version = "1.2.0"
-default-features = false
-features = ["derive"]
 
 [dependencies.frame-support]
 default-features = false
-git = "https://github.com/paritytech/substrate"
-package = "frame-support"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
 
 [dependencies.system]
 default-features = false
-git = "https://github.com/paritytech/substrate"
-package = "frame-system"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
-
-[dependencies.sp-arithmetic]
-default-features = false
-git = "https://github.com/paritytech/substrate"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
-
-[dev-dependencies.sp-core]
-default-features = false
-git = "https://github.com/paritytech/substrate"
-package = "sp-core"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
-
-[dev-dependencies.sp-io]
-default-features = false
-git = "https://github.com/paritytech/substrate"
-package = "sp-io"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
-
-[dependencies.sp-runtime]
-default-features = false
-git = "https://github.com/paritytech/substrate"
-package = "sp-runtime"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
+package = 'frame-system'
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
 
 [dependencies.assets]
 default-features = false
-git = "https://github.com/paritytech/substrate"
 package = "pallet-generic-asset"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
+
+[dependencies.timestamp]
+default-features = false
+package = "pallet-timestamp"
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
+
+[dev-dependencies.sp-core]
+default-features = false
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
+
+[dev-dependencies.sp-io]
+default-features = false
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
+
+[dependencies.sp-runtime]
+default-features = false
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
+
+[dependencies.sp-arithmetic]
+default-features = false
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
 
 [dependencies.rstd]
 default-features = false
-git = "https://github.com/paritytech/substrate"
 package = "sp-std"
-rev = "5f246ffb4843cc527de51a889833e1c6015ecf80"
+git = "https://github.com/paritytech/substrate.git"
+rev = "f5c6ebf966c126117717445416515987ecd13a40"
 
 [features]
 default = ['std']
