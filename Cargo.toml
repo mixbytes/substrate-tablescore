@@ -12,51 +12,51 @@ safe-mix = { default-features = false, version = '1.0.0' }
 [dependencies.frame-support]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dependencies.system]
 default-features = false
 package = 'frame-system'
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dependencies.assets]
 default-features = false
 package = "pallet-generic-asset"
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dependencies.timestamp]
 default-features = false
 package = "pallet-timestamp"
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dev-dependencies.sp-core]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dev-dependencies.sp-io]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dependencies.sp-runtime]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dependencies.sp-arithmetic]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [dependencies.rstd]
 default-features = false
 package = "sp-std"
 git = "https://github.com/paritytech/substrate.git"
-rev = "f5c6ebf966c126117717445416515987ecd13a40"
+rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
 [features]
 default = ['std']
