@@ -6,7 +6,7 @@ use crate::record::*;
 use crate::reward_sharing::RewardSharing;
 use crate::table_data::*;
 use codec::{Decode, Encode};
-use sp_arithmetic::traits::{BaseArithmetic, Zero};
+use sp_arithmetic::traits::{SimpleArithmetic, Zero};
 
 pub type RawString = Vec<u8>;
 
@@ -16,8 +16,8 @@ pub struct Table<
     AssetId: Default + Encode + Decode,
     VoterId: Default + Ord + Encode + Decode + Clone,
     TargetType: Default + Ord + Encode + Decode,
-    BalanceType: Default + Copy + BaseArithmetic + Zero + Encode + Decode,
-    PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
+    BalanceType: Default + Copy + SimpleArithmetic + Zero + Encode + Decode,
+    PeriodType: Default + SimpleArithmetic + Copy + Encode + Decode,
     WalletType: Default + Encode + Decode,
 > {
     /// Optional name for table
@@ -43,8 +43,8 @@ impl<
         AssetId: Default + Encode + Decode,
         VoterId: Default + Ord + Encode + Decode + Clone,
         TargetType: Default + Ord + Clone + Encode + Decode,
-        BalanceType: Default + Copy + BaseArithmetic + Clone + Encode + Decode,
-        PeriodType: Default + BaseArithmetic + Copy + Encode + Decode,
+        BalanceType: Default + Copy + SimpleArithmetic + Clone + Encode + Decode,
+        PeriodType: Default + SimpleArithmetic + Copy + Encode + Decode,
         WalletType: Default + Encode + Decode,
     > Table<AssetId, VoterId, TargetType, BalanceType, PeriodType, WalletType>
 {

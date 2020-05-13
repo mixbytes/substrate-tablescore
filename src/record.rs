@@ -1,16 +1,16 @@
 use codec::{Decode, Encode};
 use core::cmp::{Ord, Ordering, PartialOrd};
 
-use sp_arithmetic::traits::BaseArithmetic;
+use sp_arithmetic::traits::SimpleArithmetic;
 
 #[derive(Encode, Default, Decode, Clone, Eq, PartialEq)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Record<TargetType: Default, BalanceType: BaseArithmetic + Default> {
+pub struct Record<TargetType: Default, BalanceType: SimpleArithmetic + Default> {
     target: TargetType,
     pub balance: BalanceType,
 }
 
-impl<TargetType: Default, BalanceType: BaseArithmetic + Default> Record<TargetType, BalanceType> {
+impl<TargetType: Default, BalanceType: SimpleArithmetic + Default> Record<TargetType, BalanceType> {
     pub fn new(target: TargetType, balance: BalanceType) -> Self {
         Record { target, balance }
     }
@@ -20,7 +20,7 @@ impl<TargetType: Default, BalanceType: BaseArithmetic + Default> Record<TargetTy
     }
 }
 
-impl<TargetType: Default + Ord, BalanceType: BaseArithmetic + Default> Ord
+impl<TargetType: Default + Ord, BalanceType: SimpleArithmetic + Default> Ord
     for Record<TargetType, BalanceType>
 {
     fn cmp(&self, other: &Self) -> Ordering {
@@ -32,7 +32,7 @@ impl<TargetType: Default + Ord, BalanceType: BaseArithmetic + Default> Ord
     }
 }
 
-impl<TargetType: Default + Ord, BalanceType: BaseArithmetic + Default> PartialOrd
+impl<TargetType: Default + Ord, BalanceType: SimpleArithmetic + Default> PartialOrd
     for Record<TargetType, BalanceType>
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {

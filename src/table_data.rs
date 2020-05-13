@@ -1,7 +1,7 @@
 use codec::{Decode, Encode};
 use core::cmp::Ordering;
 use rstd::collections::btree_map::BTreeMap;
-use sp_arithmetic::traits::{BaseArithmetic, Zero};
+use sp_arithmetic::traits::{SimpleArithmetic, Zero};
 
 use crate::reward_sharing::{RewardSharing, Rewarder};
 
@@ -9,8 +9,8 @@ use crate::reward_sharing::{RewardSharing, Rewarder};
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct TargetData<
     VoterId: Default + Ord + Clone,
-    BalanceType: Default + Copy + BaseArithmetic + Zero,
-    PeriodType: Default + BaseArithmetic + Copy,
+    BalanceType: Default + Copy + SimpleArithmetic + Zero,
+    PeriodType: Default + SimpleArithmetic + Copy,
 > {
     pub total: BalanceType,
     pub votes: BTreeMap<VoterId, BalanceType>,
@@ -28,8 +28,8 @@ pub enum VoteResult<VoteType, RewardType> {
 
 impl<
         VoterId: Default + Ord + Clone,
-        BalanceType: Default + Copy + BaseArithmetic + Zero + Clone,
-        PeriodType: Default + BaseArithmetic + Copy,
+        BalanceType: Default + Copy + SimpleArithmetic + Zero + Clone,
+        PeriodType: Default + SimpleArithmetic + Copy,
     > TargetData<VoterId, BalanceType, PeriodType>
 {
     pub fn create_with_first_vote(first_voter: VoterId, balance: BalanceType) -> Self {
@@ -107,8 +107,8 @@ impl<
 
 impl<
         VoterId: Default + Ord + Clone,
-        BalanceType: Default + Copy + BaseArithmetic + Zero + Clone,
-        PeriodType: Default + BaseArithmetic + Copy,
+        BalanceType: Default + Copy + SimpleArithmetic + Zero + Clone,
+        PeriodType: Default + SimpleArithmetic + Copy,
     > RewardSharing for TargetData<VoterId, BalanceType, PeriodType>
 {
     type RewardBalance = BalanceType;

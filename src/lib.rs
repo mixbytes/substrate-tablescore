@@ -2,7 +2,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{decl_error, decl_event, decl_module, decl_storage, dispatch, Parameter};
-use sp_arithmetic::traits::{BaseArithmetic, CheckedAdd, One};
+use sp_arithmetic::traits::{SimpleArithmetic, CheckedAdd, One};
 use sp_runtime::traits::Member;
 use system::ensure_signed;
 
@@ -23,9 +23,9 @@ mod tests;
 pub trait Trait: system::Trait + assets::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 
-    type TableId: Default + Parameter + Member + Copy + BaseArithmetic + CheckedAdd + One;
+    type TableId: Default + Parameter + Member + Copy + SimpleArithmetic + CheckedAdd + One;
 
-    type PeriodType: Default + Parameter + BaseArithmetic + Copy;
+    type PeriodType: Default + Parameter + SimpleArithmetic + Copy;
 
     /// Target for vote
     type TargetType: Default + Parameter + Ord + Clone;

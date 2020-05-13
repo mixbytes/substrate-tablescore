@@ -10,6 +10,19 @@ Pallet for work with table score.
 | Target 2  | 72    |
 | ...       | ...   |
 
+## Build
+
+```console
+# Build
+cargo build
+
+# Build with wasm target
+cargo wbuild
+
+# Test code
+cargo test
+```
+
 ## Example
 Example of selecting a subset of accounts by tablescore
 

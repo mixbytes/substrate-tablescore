@@ -1,6 +1,6 @@
 use codec::{Decode, Encode};
 use rstd::collections::btree_map::BTreeMap;
-use sp_arithmetic::traits::{BaseArithmetic, One, Zero};
+use sp_arithmetic::traits::*;
 
 pub trait RewardSharing {
     type RewardBalance;
@@ -12,15 +12,15 @@ pub trait RewardSharing {
 
 #[derive(Decode, Encode, Default, Eq, PartialEq, Clone)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Rewarder<BalanceType: BaseArithmetic, PeriodType: Ord, VoterId: Ord> {
+pub struct Rewarder<BalanceType: SimpleArithmetic, PeriodType: Ord + SimpleArithmetic, VoterId: Ord> {
     current_reward: BalanceType,
     rewards: BTreeMap<PeriodType, BalanceType>,
     origin: BTreeMap<VoterId, PeriodType>,
 }
 
 impl<
-        BalanceType: Default + BaseArithmetic + Copy,
-        PeriodType: Default + BaseArithmetic + Copy,
+        BalanceType: Default + SimpleArithmetic + Copy,
+        PeriodType: Default + SimpleArithmetic + Copy,
         VoterId: Ord,
     > Rewarder<BalanceType, PeriodType, VoterId>
 {
@@ -50,8 +50,8 @@ impl<
 }
 
 impl<
-        BalanceType: Default + Copy + BaseArithmetic,
-        PeriodType: Default + BaseArithmetic + Copy,
+        BalanceType: Default + Copy + SimpleArithmetic,
+        PeriodType: Default + SimpleArithmetic + Copy,
         VoterId: Ord,
     > RewardSharing for Rewarder<BalanceType, PeriodType, VoterId>
 {
@@ -83,12 +83,12 @@ impl<
 
 #[cfg(test)]
 mod tests_reward_sharing {
-    use super::RewardSharing;
-    type Rewarder = super::Rewarder<u32, u8, u8>;
+    use crate::reward_sharing::RewardSharing;
+    type Rewarder = super::Rewarder<u32, u32, u32>;
 
-    const ALICE: u8 = 0;
-    const BOB: u8 = 1;
-    const CAROL: u8 = 2;
+    const ALICE: u32 = 0;
+    const BOB: u32 = 1;
+    const CAROL: u32 = 2;
 
     #[test]
     fn simple_sharing() {
