@@ -44,6 +44,8 @@ pub fn append_reward(origin, table_id: T::TableId, balance: Balance<T>, target: 
 pub fn pop_reward(origin, table_id: T::TableId, target: T::TargetType) -> dispatch::DispatchResult;
 ```
 
+Reward tokens are stored on the table creator's wallet in a reserved state (temporary solution).
+
 ## Build
 
 ```console
