@@ -32,17 +32,17 @@ package = "pallet-timestamp"
 git = "https://github.com/paritytech/substrate.git"
 rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
-[dev-dependencies.sp-core]
+[dependencies.sp-core]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
 rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
-[dev-dependencies.sp-api]
+[dependencies.sp-api]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
 rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
 
-[dev-dependencies.sp-io]
+[dependencies.sp-io]
 default-features = false
 git = "https://github.com/paritytech/substrate.git"
 rev = "00a400f82539e2f78e8ddbcd98aea512c87c5f3c"
