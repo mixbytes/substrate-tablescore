@@ -2,7 +2,7 @@
 authors = ["sadsnake sadsnake@mixbytes.io"]
 edition = '2018'
 name = 'pallet-tablescore'
-version = '0.1.0'
+version = '0.1.1'
 
 [dependencies]
 serde = { version = "1.0.101", optional = true }
